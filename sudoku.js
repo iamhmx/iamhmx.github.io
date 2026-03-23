@@ -327,28 +327,113 @@ class SudokuGame {
 
     generateIrregularPuzzle() {
         const size = 7;
-        
-        // 随机选一个区域布局
         const layouts = this.getIrregularRegionLayouts();
-        const regions = layouts[Math.floor(Math.random() * layouts.length)];
-        this.puzzleData.regions = regions;
         
-        // 预计算每个区域包含的格子
-        const regionCells = {};
-        for (let i = 0; i < size; i++) {
-            for (let j = 0; j < size; j++) {
-                const r = regions[i][j];
-                if (!regionCells[r]) regionCells[r] = [];
-                regionCells[r].push([i, j]);
+        // 多次尝试生成有效的不规则数独
+        const maxAttempts = 20;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            // 随机选一个区域布局
+            const regions = layouts[Math.floor(Math.random() * layouts.length)];
+            
+            // 预计算每个区域包含的格子
+            const regionCells = {};
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const r = regions[i][j];
+                    if (!regionCells[r]) regionCells[r] = [];
+                    regionCells[r].push([i, j]);
+                }
             }
+            
+            // 生成完整的有效不规则数独解
+            const solution = this.generateIrregularSolution(size, regions, regionCells);
+            
+            // 验证解的完整性：所有格子必须非零
+            if (!solution || !this.isValidIrregularSolution(solution, size, regions, regionCells)) {
+                console.log(`七宫数独生成第${attempt + 1}次尝试：解无效，重试...`);
+                continue;
+            }
+            
+            this.puzzleData.regions = regions;
+            this.solution = solution;
+            
+            // 挖空（49格目标留约16个已知数字，与六宫33%留存比例一致）
+            const cellsToRemove = 33;
+            this.board = this.createIrregularPuzzle(solution, cellsToRemove, size, regions, regionCells);
+            
+            // 验证挖空后的谜题仍然有唯一解
+            const solutionCount = this.countIrregularSolutions(this.board, size, regions, regionCells);
+            if (solutionCount === 1) {
+                console.log(`七宫数独生成成功（第${attempt + 1}次尝试）`);
+                return;
+            }
+            console.log(`七宫数独生成第${attempt + 1}次尝试：谜题非唯一解，重试...`);
         }
         
-        // 生成完整的有效不规则数独解
-        this.solution = this.generateIrregularSolution(size, regions, regionCells);
-        
-        // 挖空（49格目标留约16个已知数字，与六宫33%留存比例一致）
-        const cellsToRemove = 33;
-        this.board = this.createIrregularPuzzle(this.solution, cellsToRemove, size, regions, regionCells);
+        // 如果多次生成都失败，使用预定义的安全题目
+        console.warn('七宫数独随机生成失败，使用预定义题目');
+        this.puzzleData.regions = [
+            [0, 0, 0, 0, 0, 0, 1],
+            [2, 2, 0, 1, 1, 1, 1],
+            [3, 2, 2, 2, 2, 2, 1],
+            [3, 3, 3, 3, 3, 3, 1],
+            [4, 4, 4, 4, 4, 4, 5],
+            [4, 6, 6, 6, 6, 6, 5],
+            [6, 6, 5, 5, 5, 5, 5]
+        ];
+        this.solution = [
+            [6, 4, 1, 5, 3, 2, 7],
+            [4, 5, 7, 2, 1, 3, 6],
+            [5, 3, 2, 6, 7, 1, 4],
+            [3, 2, 6, 1, 4, 7, 5],
+            [7, 6, 5, 3, 2, 4, 1],
+            [1, 7, 3, 4, 6, 5, 2],
+            [2, 1, 4, 7, 5, 6, 3]
+        ];
+        this.board = [
+            [6, 4, 0, 5, 3, 0, 0],
+            [0, 0, 7, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 2, 6, 1, 0, 7, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 4, 6, 0, 0],
+            [0, 0, 0, 0, 0, 6, 0]
+        ];
+    }
+
+    // 验证不规则数独解的完整性和正确性
+    isValidIrregularSolution(solution, size, regions, regionCells) {
+        // 检查所有格子必须在1-size范围内（不能有0）
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (solution[i][j] < 1 || solution[i][j] > size) return false;
+            }
+        }
+        // 检查每行
+        for (let i = 0; i < size; i++) {
+            const seen = new Set();
+            for (let j = 0; j < size; j++) {
+                if (seen.has(solution[i][j])) return false;
+                seen.add(solution[i][j]);
+            }
+        }
+        // 检查每列
+        for (let j = 0; j < size; j++) {
+            const seen = new Set();
+            for (let i = 0; i < size; i++) {
+                if (seen.has(solution[i][j])) return false;
+                seen.add(solution[i][j]);
+            }
+        }
+        // 检查每个区域
+        for (const region in regionCells) {
+            const seen = new Set();
+            for (const [r, c] of regionCells[region]) {
+                if (seen.has(solution[r][c])) return false;
+                seen.add(solution[r][c]);
+            }
+        }
+        return true;
     }
 
     generateIrregularSolution(size, regions, regionCells) {
@@ -410,8 +495,10 @@ class SudokuGame {
             return false;
         };
 
-        solve();
-        return board;
+        if (solve()) {
+            return board;
+        }
+        return null; // 生成失败返回null
     }
 
     createIrregularPuzzle(solution, cellsToRemove, size, regions, regionCells) {
