@@ -151,6 +151,10 @@ header h1 {
     max-width: 420px;
 }
 
+.sudoku-board.size-7 .cell {
+    font-size: 1.3rem;
+}
+
 .sudoku-board.size-9 {
     grid-template-columns: repeat(9, 1fr);
     max-width: 450px;
@@ -406,22 +410,6 @@ header h1 {
     background: inherit;
 }
 
-/* Keep region colors for irregular sudoku even when highlight is off */
-.sudoku-board.no-highlight .region-1 { background-color: #ffebee; }
-.sudoku-board.no-highlight .region-2 { background-color: #e3f2fd; }
-.sudoku-board.no-highlight .region-3 { background-color: #e8f5e9; }
-.sudoku-board.no-highlight .region-4 { background-color: #fff3e0; }
-.sudoku-board.no-highlight .region-5 { background-color: #f3e5f5; }
-.sudoku-board.no-highlight .region-6 { background-color: #e0f7fa; }
-.sudoku-board.no-highlight .region-7 { background-color: #fce4ec; }
-
-.sudoku-board.no-highlight .region-1.fixed { background-color: #ffcdd2; }
-.sudoku-board.no-highlight .region-2.fixed { background-color: #bbdefb; }
-.sudoku-board.no-highlight .region-3.fixed { background-color: #c8e6c9; }
-.sudoku-board.no-highlight .region-4.fixed { background-color: #ffe0b2; }
-.sudoku-board.no-highlight .region-5.fixed { background-color: #e1bee7; }
-.sudoku-board.no-highlight .region-6.fixed { background-color: #b2ebf2; }
-.sudoku-board.no-highlight .region-7.fixed { background-color: #f8bbd9; }
 
 /* Keep fixed cell style consistent when highlight is off */
 .sudoku-board.no-highlight .cell.fixed {
@@ -524,6 +512,10 @@ header h1 {
     }
     
     .sudoku-board.size-9 .cell {
+        font-size: 1rem;
+    }
+    
+    .sudoku-board.size-7 .cell {
         font-size: 1rem;
     }
     

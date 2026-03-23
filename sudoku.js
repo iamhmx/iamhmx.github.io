@@ -224,7 +224,13 @@ class SudokuGame {
             return;
         }
         
-        // 对于不规则数独，使用预定义的谜题库
+        // 对于不规则数独，随机生成新题
+        if (this.currentType === 'irregular7') {
+            this.generateIrregularPuzzle();
+            return;
+        }
+        
+        // 其他类型使用预定义的谜题库
         const puzzles = this.puzzleLibrary[this.currentType];
         if (puzzles && puzzles.length > 0) {
             const puzzleIndex = Math.floor(Math.random() * puzzles.length);
@@ -257,6 +263,247 @@ class SudokuGame {
         }
         
         this.board = this.createPuzzleFromSolution(this.solution, cellsToRemove);
+    }
+
+    // ========================================
+    // 七宫不规则数独生成
+    // ========================================
+
+    // 预定义多套不规则区域布局（每套7个区域，每区域7格）
+    getIrregularRegionLayouts() {
+        return [
+            // 布局1 - 原始布局
+            [
+                [0, 0, 0, 0, 0, 0, 1],
+                [2, 2, 0, 1, 1, 1, 1],
+                [3, 2, 2, 2, 2, 2, 1],
+                [3, 3, 3, 3, 3, 3, 1],
+                [4, 4, 4, 4, 4, 4, 5],
+                [4, 6, 6, 6, 6, 6, 5],
+                [6, 6, 5, 5, 5, 5, 5]
+            ],
+            // 布局2
+            [
+                [0, 0, 0, 0, 1, 1, 1],
+                [2, 2, 0, 0, 0, 1, 1],
+                [2, 2, 2, 3, 3, 1, 1],
+                [4, 2, 2, 3, 3, 3, 5],
+                [4, 4, 6, 3, 3, 5, 5],
+                [4, 4, 6, 6, 6, 5, 5],
+                [4, 4, 6, 6, 6, 5, 5]
+            ],
+            // 布局3
+            [
+                [0, 0, 0, 1, 1, 1, 1],
+                [0, 0, 2, 2, 2, 1, 1],
+                [0, 0, 2, 2, 3, 3, 1],
+                [4, 4, 2, 2, 3, 3, 3],
+                [4, 4, 5, 5, 3, 3, 6],
+                [4, 4, 5, 5, 5, 6, 6],
+                [4, 5, 5, 6, 6, 6, 6]
+            ],
+            // 布局4
+            [
+                [0, 0, 0, 0, 1, 1, 1],
+                [2, 0, 0, 0, 1, 1, 1],
+                [2, 2, 3, 3, 3, 3, 1],
+                [2, 2, 2, 3, 3, 4, 4],
+                [5, 2, 6, 6, 3, 4, 4],
+                [5, 5, 5, 6, 6, 4, 4],
+                [5, 5, 5, 6, 6, 6, 4]
+            ],
+            // 布局5 - 对角线风格
+            [
+                [1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 0, 0, 0, 2, 2],
+                [1, 1, 3, 3, 2, 2, 2],
+                [4, 3, 3, 3, 2, 2, 5],
+                [4, 4, 3, 3, 5, 5, 5],
+                [4, 4, 6, 6, 6, 5, 5],
+                [4, 4, 6, 6, 6, 6, 5]
+            ]
+        ];
+    }
+
+    generateIrregularPuzzle() {
+        const size = 7;
+        
+        // 随机选一个区域布局
+        const layouts = this.getIrregularRegionLayouts();
+        const regions = layouts[Math.floor(Math.random() * layouts.length)];
+        this.puzzleData.regions = regions;
+        
+        // 预计算每个区域包含的格子
+        const regionCells = {};
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                const r = regions[i][j];
+                if (!regionCells[r]) regionCells[r] = [];
+                regionCells[r].push([i, j]);
+            }
+        }
+        
+        // 生成完整的有效不规则数独解
+        this.solution = this.generateIrregularSolution(size, regions, regionCells);
+        
+        // 挖空（49格目标留约16个已知数字，与六宫33%留存比例一致）
+        const cellsToRemove = 33;
+        this.board = this.createIrregularPuzzle(this.solution, cellsToRemove, size, regions, regionCells);
+    }
+
+    generateIrregularSolution(size, regions, regionCells) {
+        const board = Array(size).fill(null).map(() => Array(size).fill(0));
+        
+        const isValid = (num, row, col) => {
+            // 检查行
+            for (let j = 0; j < size; j++) {
+                if (j !== col && board[row][j] === num) return false;
+            }
+            // 检查列
+            for (let i = 0; i < size; i++) {
+                if (i !== row && board[i][col] === num) return false;
+            }
+            // 检查区域
+            const region = regions[row][col];
+            for (const [r, c] of regionCells[region]) {
+                if ((r !== row || c !== col) && board[r][c] === num) return false;
+            }
+            return true;
+        };
+
+        // 使用MRV启发式（最小候选数优先）来加速生成
+        const findBestEmpty = () => {
+            let bestRow = -1, bestCol = -1, bestCount = size + 1;
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === 0) {
+                        let candidates = 0;
+                        for (let num = 1; num <= size; num++) {
+                            if (isValid(num, i, j)) candidates++;
+                        }
+                        if (candidates === 0) return { row: i, col: j, count: 0 };
+                        if (candidates < bestCount) {
+                            bestRow = i;
+                            bestCol = j;
+                            bestCount = candidates;
+                        }
+                    }
+                }
+            }
+            if (bestRow === -1) return null;
+            return { row: bestRow, col: bestCol, count: bestCount };
+        };
+
+        const solve = () => {
+            const result = findBestEmpty();
+            if (!result) return true;
+            if (result.count === 0) return false;
+            const { row, col } = result;
+            const nums = this.shuffleArray([...Array(size)].map((_, i) => i + 1));
+            for (const num of nums) {
+                if (isValid(num, row, col)) {
+                    board[row][col] = num;
+                    if (solve()) return true;
+                    board[row][col] = 0;
+                }
+            }
+            return false;
+        };
+
+        solve();
+        return board;
+    }
+
+    createIrregularPuzzle(solution, cellsToRemove, size, regions, regionCells) {
+        const puzzle = solution.map(row => [...row]);
+        const positions = [];
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                positions.push([i, j]);
+            }
+        }
+        this.shuffleArray(positions);
+        
+        let removed = 0;
+        for (const [row, col] of positions) {
+            if (removed >= cellsToRemove) break;
+            
+            const backup = puzzle[row][col];
+            puzzle[row][col] = 0;
+            
+            // 检查唯一解
+            if (this.countIrregularSolutions(puzzle, size, regions, regionCells) !== 1) {
+                puzzle[row][col] = backup;
+            } else {
+                removed++;
+            }
+        }
+        
+        return puzzle;
+    }
+
+    // 不规则数独的解计数器（最多数到2）
+    countIrregularSolutions(puzzle, size, regions, regionCells) {
+        const board = puzzle.map(row => [...row]);
+        let count = 0;
+
+        const isValid = (num, row, col) => {
+            for (let j = 0; j < size; j++) {
+                if (j !== col && board[row][j] === num) return false;
+            }
+            for (let i = 0; i < size; i++) {
+                if (i !== row && board[i][col] === num) return false;
+            }
+            const region = regions[row][col];
+            for (const [r, c] of regionCells[region]) {
+                if ((r !== row || c !== col) && board[r][c] === num) return false;
+            }
+            return true;
+        };
+
+        const findBestEmpty = () => {
+            let bestRow = -1, bestCol = -1, bestCount = size + 1;
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === 0) {
+                        let candidates = 0;
+                        for (let num = 1; num <= size; num++) {
+                            if (isValid(num, i, j)) candidates++;
+                        }
+                        if (candidates === 0) return { row: i, col: j, count: 0 };
+                        if (candidates < bestCount) {
+                            bestRow = i;
+                            bestCol = j;
+                            bestCount = candidates;
+                        }
+                    }
+                }
+            }
+            if (bestRow === -1) return null;
+            return { row: bestRow, col: bestCol, count: bestCount };
+        };
+
+        const solve = () => {
+            if (count >= 2) return;
+            const result = findBestEmpty();
+            if (!result) {
+                count++;
+                return;
+            }
+            if (result.count === 0) return;
+            const { row, col } = result;
+            for (let num = 1; num <= size; num++) {
+                if (isValid(num, row, col)) {
+                    board[row][col] = num;
+                    solve();
+                    if (count >= 2) return;
+                    board[row][col] = 0;
+                }
+            }
+        };
+
+        solve();
+        return count;
     }
 
     generateValidSudoku(size, boxRows, boxCols) {
@@ -486,8 +733,7 @@ class SudokuGame {
         const currentRegion = regions[row][col];
         const size = this.boardSize;
         
-        // Add region color
-        cell.classList.add(`region-${currentRegion + 1}`);
+        // Region borders only, no color
         
         // Add borders where regions differ
         if (row > 0 && regions[row - 1][col] !== currentRegion) {
