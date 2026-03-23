@@ -251,7 +251,7 @@ class SudokuGame {
         if (size === 6) {
             cellsToRemove = 24; // 36格中尝试挖掉24格，目标留12-13个提示数
         } else if (size === 9) {
-            cellsToRemove = 45; // 81格中挖掉45格，留36个提示数
+            cellsToRemove = 54; // 81格中尝试挖掉54格，目标留27个提示数（与六宫难度比例一致）
         } else {
             cellsToRemove = Math.floor(size * size * 0.55);
         }
@@ -347,13 +347,27 @@ class SudokuGame {
         const board = puzzle.map(row => [...row]);
         let count = 0;
 
-        const findEmpty = () => {
+        // 找到约束最多的空格（候选数最少的），加速剪枝
+        const findBestEmpty = () => {
+            let bestRow = -1, bestCol = -1, bestCount = size + 1;
             for (let i = 0; i < size; i++) {
                 for (let j = 0; j < size; j++) {
-                    if (board[i][j] === 0) return [i, j];
+                    if (board[i][j] === 0) {
+                        let candidates = 0;
+                        for (let num = 1; num <= size; num++) {
+                            if (isValid(num, i, j)) candidates++;
+                        }
+                        if (candidates === 0) return { row: i, col: j, count: 0 }; // 死胡同
+                        if (candidates < bestCount) {
+                            bestRow = i;
+                            bestCol = j;
+                            bestCount = candidates;
+                        }
+                    }
                 }
             }
-            return null;
+            if (bestRow === -1) return null; // 没有空格
+            return { row: bestRow, col: bestCol, count: bestCount };
         };
 
         const isValid = (num, row, col) => {
@@ -375,18 +389,19 @@ class SudokuGame {
         };
 
         const solve = () => {
-            if (count >= 2) return; // 已经发现多解，提前终止
-            const empty = findEmpty();
-            if (!empty) {
+            if (count >= 2) return;
+            const result = findBestEmpty();
+            if (!result) {
                 count++;
                 return;
             }
-            const [row, col] = empty;
+            if (result.count === 0) return; // 无候选数，剪枝
+            const { row, col } = result;
             for (let num = 1; num <= size; num++) {
                 if (isValid(num, row, col)) {
                     board[row][col] = num;
                     solve();
-                    if (count >= 2) return; // 提前终止
+                    if (count >= 2) return;
                     board[row][col] = 0;
                 }
             }

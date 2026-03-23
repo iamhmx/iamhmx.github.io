@@ -156,6 +156,10 @@ header h1 {
     max-width: 450px;
 }
 
+.sudoku-board.size-9 .cell {
+    font-size: 1.3rem;
+}
+
 .cell {
     aspect-ratio: 1;
     background: white;
@@ -517,6 +521,10 @@ header h1 {
     
     .cell {
         font-size: 1.2rem;
+    }
+    
+    .sudoku-board.size-9 .cell {
+        font-size: 1rem;
     }
     
     .number-btn {
