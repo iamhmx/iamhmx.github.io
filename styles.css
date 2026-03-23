@@ -1,0 +1,562 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Navigation - Sudoku Types */
+.sudoku-types {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.type-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.type-btn:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-2px);
+}
+
+.type-btn.active {
+    background: white;
+    color: #764ba2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Game Info */
+.game-info {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.rule-box {
+    flex: 1;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.timer-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    white-space: nowrap;
+}
+
+.timer-icon {
+    font-size: 1.4rem;
+}
+
+#timerDisplay {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #764ba2;
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 2px;
+}
+
+.rule-box h3 {
+    color: #764ba2;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.rule-box p {
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Game Container */
+.game-container {
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+/* Sudoku Board */
+.sudoku-board {
+    display: grid;
+    gap: 1px;
+    background: #333;
+    border: 3px solid #333;
+    border-radius: 8px;
+    margin: 0 auto 20px;
+    overflow: hidden;
+}
+
+.sudoku-board.size-6 {
+    grid-template-columns: repeat(6, 1fr);
+    max-width: 360px;
+}
+
+.sudoku-board.size-7 {
+    grid-template-columns: repeat(7, 1fr);
+    max-width: 420px;
+}
+
+.sudoku-board.size-9 {
+    grid-template-columns: repeat(9, 1fr);
+    max-width: 450px;
+}
+
+.cell {
+    aspect-ratio: 1;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.cell:hover {
+    background: #f0f4ff;
+}
+
+.cell.selected {
+    background: #e3e9ff;
+    border: 2px solid #667eea;
+}
+
+.cell.fixed {
+    background: #f5f5f5;
+    color: #333;
+    cursor: not-allowed;
+}
+
+.cell.fixed:hover {
+    background: #f5f5f5;
+}
+
+.cell.error {
+    background: #ffe5e5;
+    color: #d32f2f;
+}
+
+.cell.correct {
+    background: #e8f5e9;
+}
+
+.cell.highlight {
+    background: #fff3cd;
+}
+
+/* Box borders for standard sudoku */
+.sudoku-board.size-6 .cell:nth-child(3n) {
+    border-right: 2px solid #333;
+}
+
+.sudoku-board.size-6 .cell:nth-child(n+7):nth-child(-n+12) {
+    border-bottom: 2px solid #333;
+}
+
+.sudoku-board.size-9 .cell:nth-child(3n) {
+    border-right: 2px solid #333;
+}
+
+.sudoku-board.size-9 .cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-board.size-9 .cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 2px solid #333;
+}
+
+/* Irregular region colors */
+.region-1 { background-color: #ffebee; }
+.region-2 { background-color: #e3f2fd; }
+.region-3 { background-color: #e8f5e9; }
+.region-4 { background-color: #fff3e0; }
+.region-5 { background-color: #f3e5f5; }
+.region-6 { background-color: #e0f7fa; }
+.region-7 { background-color: #fce4ec; }
+
+.region-1.fixed { background-color: #ffcdd2; }
+.region-2.fixed { background-color: #bbdefb; }
+.region-3.fixed { background-color: #c8e6c9; }
+.region-4.fixed { background-color: #ffe0b2; }
+.region-5.fixed { background-color: #e1bee7; }
+.region-6.fixed { background-color: #b2ebf2; }
+.region-7.fixed { background-color: #f8bbd9; }
+
+/* Number Pad */
+.number-pad {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.number-btn {
+    width: 45px;
+    height: 45px;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    background: white;
+    color: #667eea;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.number-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+}
+
+.number-btn.erase {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.number-btn.erase:hover {
+    background: #ee5a5a;
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.undo-btn {
+    background: linear-gradient(135deg, #78909c, #546e7a);
+    color: white;
+}
+
+.undo-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(120, 144, 156, 0.4);
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.check-btn {
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: white;
+}
+
+.check-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+}
+
+.clear-btn {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.clear-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 152, 0, 0.4);
+}
+
+.hint-btn {
+    background: linear-gradient(135deg, #00bcd4, #0097a7);
+    color: white;
+}
+
+.hint-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 188, 212, 0.4);
+}
+
+/* Highlight Toggle Button */
+.highlight-toggle-btn {
+    transition: all 0.3s ease;
+}
+
+.highlight-toggle-btn.on {
+    background: linear-gradient(135deg, #ab47bc, #7b1fa2);
+    color: white;
+}
+
+.highlight-toggle-btn.on:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(171, 71, 188, 0.4);
+}
+
+.highlight-toggle-btn.off {
+    background: linear-gradient(135deg, #9e9e9e, #616161);
+    color: white;
+}
+
+.highlight-toggle-btn.off:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(158, 158, 158, 0.4);
+}
+
+/* User input number style (default: same as normal) */
+.cell.user-input {
+    color: #555;
+}
+
+/* When highlight is off: user input shows gray, no highlight/error/correct colors */
+.sudoku-board.no-highlight .cell.user-input {
+    color: #999;
+}
+
+.sudoku-board.no-highlight .cell:hover {
+    background: white;
+}
+
+.sudoku-board.no-highlight .cell.selected {
+    background: white;
+    border: 2px solid #667eea;
+}
+
+.sudoku-board.no-highlight .cell.highlight {
+    background: inherit;
+}
+
+.sudoku-board.no-highlight .cell.error {
+    background: inherit;
+    color: #999;
+}
+
+.sudoku-board.no-highlight .cell.correct {
+    background: inherit;
+}
+
+/* Keep region colors for irregular sudoku even when highlight is off */
+.sudoku-board.no-highlight .region-1 { background-color: #ffebee; }
+.sudoku-board.no-highlight .region-2 { background-color: #e3f2fd; }
+.sudoku-board.no-highlight .region-3 { background-color: #e8f5e9; }
+.sudoku-board.no-highlight .region-4 { background-color: #fff3e0; }
+.sudoku-board.no-highlight .region-5 { background-color: #f3e5f5; }
+.sudoku-board.no-highlight .region-6 { background-color: #e0f7fa; }
+.sudoku-board.no-highlight .region-7 { background-color: #fce4ec; }
+
+.sudoku-board.no-highlight .region-1.fixed { background-color: #ffcdd2; }
+.sudoku-board.no-highlight .region-2.fixed { background-color: #bbdefb; }
+.sudoku-board.no-highlight .region-3.fixed { background-color: #c8e6c9; }
+.sudoku-board.no-highlight .region-4.fixed { background-color: #ffe0b2; }
+.sudoku-board.no-highlight .region-5.fixed { background-color: #e1bee7; }
+.sudoku-board.no-highlight .region-6.fixed { background-color: #b2ebf2; }
+.sudoku-board.no-highlight .region-7.fixed { background-color: #f8bbd9; }
+
+/* Keep fixed cell style consistent when highlight is off */
+.sudoku-board.no-highlight .cell.fixed {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.sudoku-board.no-highlight .cell.fixed:hover {
+    background: #f5f5f5;
+}
+
+/* Override for irregular region fixed cells when highlight is off */
+.sudoku-board.no-highlight .cell.user-input.error,
+.sudoku-board.no-highlight .cell.user-input.correct {
+    color: #999;
+}
+
+/* Message Box */
+.message-box {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.message-box.hidden {
+    display: none;
+}
+
+.message-content {
+    background: white;
+    padding: 30px 50px;
+    border-radius: 20px;
+    text-align: center;
+    position: relative;
+    max-width: 90%;
+    animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.message-content span {
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+/* Success Animation */
+.success-animation {
+    animation: celebrate 0.5s ease;
+}
+
+@keyframes celebrate {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .type-btn {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .cell {
+        font-size: 1.2rem;
+    }
+    
+    .number-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+    
+    .control-btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+    
+    .game-container {
+        padding: 15px;
+    }
+}
+
+/* Thick box borders for proper sudoku layout */
+.cell.box-right {
+    border-right: 3px solid #333 !important;
+}
+
+.cell.box-bottom {
+    border-bottom: 3px solid #333 !important;
+}
+
+/* Region borders for irregular sudoku */
+.cell.region-border-top {
+    border-top: 3px solid #333 !important;
+}
+
+.cell.region-border-bottom {
+    border-bottom: 3px solid #333 !important;
+}
+
+.cell.region-border-left {
+    border-left: 3px solid #333 !important;
+}
+
+.cell.region-border-right {
+    border-right: 3px solid #333 !important;
+}
