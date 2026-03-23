@@ -353,6 +353,11 @@ header h1 {
     box-shadow: 0 5px 20px rgba(0, 188, 212, 0.4);
 }
 
+.hint-cell {
+    color: #0097a7 !important;
+    background-color: #e0f7fa !important;
+}
+
 /* Highlight Toggle Button */
 .highlight-toggle-btn {
     transition: all 0.3s ease;

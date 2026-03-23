@@ -175,6 +175,16 @@ class SudokuGame {
         this.selectedCell = null;
         this.history = [];
         
+        // 控制提示按钮显示：只对九宫和七宫显示
+        const hintBtn = document.getElementById('hintBtn');
+        if (hintBtn) {
+            if (this.currentType === 'standard9' || this.currentType === 'irregular7') {
+                hintBtn.style.display = '';
+            } else {
+                hintBtn.style.display = 'none';
+            }
+        }
+        
         // 启动计时器
         this.startTimer();
     }
@@ -1128,36 +1138,44 @@ class SudokuGame {
     giveHint() {
         const size = this.boardSize;
         
+        // 收集所有空格
+        const emptyCells = [];
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 const boardValue = this.board[i][j];
                 const solutionValue = this.solution[i]?.[j];
-                
                 if (boardValue === 0 && solutionValue > 0) {
-                    this.board[i][j] = solutionValue;
-                    
-                    const cells = document.querySelectorAll('.cell');
-                    const cellIndex = i * size + j;
-                    const cell = cells[cellIndex];
-                    
-                    if (cell && !cell.classList.contains('fixed')) {
-                        cell.textContent = solutionValue;
-                        cell.classList.add('user-input');
-                        if (this.highlightEnabled) {
-                            cell.classList.add('correct');
-                        }
-                        cell.style.animation = 'popIn 0.3s ease';
-                        setTimeout(() => {
-                            cell.style.animation = '';
-                        }, 300);
-                    }
-                    
-                    return;
+                    emptyCells.push({ row: i, col: j, value: solutionValue });
                 }
             }
         }
         
-        this.showMessage('💡 已经没有可以提示的格子了！');
+        if (emptyCells.length === 0) {
+            this.showMessage('💡 已经没有可以提示的格子了！');
+            return;
+        }
+        
+        // 随机选一个空格
+        const hint = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        const { row, col, value } = hint;
+        
+        // 记录操作历史（方便撤销）
+        this.history.push({ row, col, prevValue: 0 });
+        
+        this.board[row][col] = value;
+        
+        const cells = document.querySelectorAll('.cell');
+        const cellIndex = row * size + col;
+        const cell = cells[cellIndex];
+        
+        if (cell && !cell.classList.contains('fixed')) {
+            cell.textContent = value;
+            cell.classList.add('user-input', 'hint-cell');
+            cell.style.animation = 'popIn 0.3s ease';
+            setTimeout(() => {
+                cell.style.animation = '';
+            }, 300);
+        }
     }
 
     showMessage(text) {
