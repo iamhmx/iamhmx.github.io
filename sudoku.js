@@ -257,7 +257,7 @@ class SudokuGame {
         if (size === 6) {
             cellsToRemove = 24; // 36格中尝试挖掉24格，目标留12-13个提示数
         } else if (size === 9) {
-            cellsToRemove = 54; // 81格中尝试挖掉54格，目标留27个提示数（与六宫难度比例一致）
+            cellsToRemove = 49; // 81格中尝试挖掉49格，目标留32个提示数
         } else {
             cellsToRemove = Math.floor(size * size * 0.55);
         }
@@ -357,8 +357,8 @@ class SudokuGame {
             this.puzzleData.regions = regions;
             this.solution = solution;
             
-            // 挖空（49格目标留约16个已知数字，与六宫33%留存比例一致）
-            const cellsToRemove = 33;
+            // 挖空（49格中挖掉35格，目标留14个已知数字）
+            const cellsToRemove = 35;
             this.board = this.createIrregularPuzzle(solution, cellsToRemove, size, regions, regionCells);
             
             // 验证挖空后的谜题仍然有唯一解
