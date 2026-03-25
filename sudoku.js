@@ -10,7 +10,7 @@ class SudokuGame {
         this.solution = [];
         this.selectedCell = null;
         this.puzzleData = {};
-        this.highlightEnabled = false;
+        this.highlightEnabled = true;
         this.history = []; // 操作历史栈，用于撤销
         this.timerInterval = null; // 计时器定时器
         this.startTime = null; // 游戏开始时间
